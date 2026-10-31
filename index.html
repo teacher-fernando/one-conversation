@@ -1,1437 +1,1728 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import {
-  Play,
-  Pause,
-  RotateCcw,
-  Shuffle,
-  Eye,
-  EyeOff,
-  Grid,
-  Maximize2,
-  Minimize2,
-  ChevronLeft,
-  ChevronRight,
-  List,
-  Layers,
-  CheckCircle2,
-  AlertCircle,
-  X,
-  Dices
-} from 'lucide-react';
-
-// ==========================================
-// COMPLETE TOPIC & QUESTION DATABASE (30 TOPICS, 240 QUESTIONS)
-// ==========================================
-const CATEGORIES = [
-  'All Categories',
-  'Culture & Entertainment',
-  'Food & Places',
-  'People & Society',
-  'Personal Life & Experiences',
-  'Technology & Ideas'
-];
-
-const TOPICS_DATA = [
-  // CATEGORY 1 – CULTURE & ENTERTAINMENT
-  {
-    id: 1,
-    category: 'Culture & Entertainment',
-    title: 'ONE BOOK',
-    questions: [
-      'Why did you choose this particular book?',
-      'Who is your favourite character? Why?',
-      'Did you like the way the story ended? Why or why not?',
-      'Would you recommend this book to a younger or older person?',
-      'If you could change one thing about the story, what would it be?',
-      'Do you think books are still important in the digital age?',
-      'Is there a particular message or lesson that readers can take from this book?',
-      "Do you think the book's title and cover represent its story well?"
-    ]
-  },
-  {
-    id: 2,
-    category: 'Culture & Entertainment',
-    title: 'ONE MOVIE',
-    questions: [
-      'Why did you choose this particular movie?',
-      'Who is your favourite character? Why?',
-      'What was the most memorable scene? Why?',
-      'Did you like the ending? Would you change anything?',
-      'Do you think the actors were well chosen for their roles?',
-      'What message or idea does the movie communicate?',
-      'Would you recommend this movie to someone with different interests?',
-      'Do you think the movie is better than other films in the same genre?'
-    ]
-  },
-  {
-    id: 3,
-    category: 'Culture & Entertainment',
-    title: 'ONE SONG',
-    questions: [
-      'Why did you choose this particular song?',
-      'What is the song about?',
-      'Is there a particular lyric or part that you find meaningful?',
-      'What emotions does the song communicate?',
-      'Do you think the melody and lyrics work well together?',
-      'Would you listen to this song in a different situation or mood?',
-      "Do you think music can influence people's opinions or behaviour?",
-      "Would you recommend this song to someone who doesn't usually listen to this genre?"
-    ]
-  },
-  {
-    id: 4,
-    category: 'Culture & Entertainment',
-    title: 'ONE ALBUM',
-    questions: [
-      'Why did you choose this album?',
-      'Which track is your favourite? Why?',
-      'Is there a song on the album that you think is underrated?',
-      'Do all the tracks follow a similar musical style?',
-      'What do you think the artist wanted to communicate through this album?',
-      'How was the album received by critics and fans?',
-      "Do you think the album represents an important moment in the artist's career?",
-      'If you could remove or add one track, what would it be?'
-    ]
-  },
-  {
-    id: 5,
-    category: 'Culture & Entertainment',
-    title: 'ONE TV SERIES',
-    questions: [
-      'Why did you choose this particular series?',
-      'Who is your favourite character? Why?',
-      'Which episode do you find the most interesting or memorable?',
-      'What makes the storyline engaging?',
-      'Do you think the series maintains its quality throughout the seasons?',
-      'Would you change anything about the plot or characters?',
-      'Why do you think this series became popular?',
-      "Would you recommend it to someone who doesn't usually watch this genre?"
-    ]
-  },
-  {
-    id: 6,
-    category: 'Culture & Entertainment',
-    title: 'ONE VIDEO GAME',
-    questions: [
-      'Why did you choose this particular game?',
-      'Can you describe its storyline or main objective?',
-      'Who is your favourite character? Why?',
-      'What makes the gameplay interesting or challenging?',
-      'What is the most memorable moment you experienced while playing?',
-      'Do you think video games can tell stories as effectively as movies or books?',
-      'What would you improve about the game?',
-      'Do you think video games have a positive or negative influence on people?'
-    ]
-  },
-  {
-    id: 7,
-    category: 'Culture & Entertainment',
-    title: 'ONE DOCUMENTARY',
-    questions: [
-      'Why did you choose this documentary?',
-      'What is its main subject or message?',
-      'What was the most surprising fact you discovered?',
-      'Did the documentary change your opinion about anything?',
-      'Do you think the information was presented objectively?',
-      'Were the interviews, images, or examples effective?',
-      'Would you recommend it to someone who knows very little about the subject?',
-      'Do you think documentaries are a reliable source of information?'
-    ]
-  },
-  {
-    id: 8,
-    category: 'Culture & Entertainment',
-    title: 'ONE PODCAST EPISODE',
-    questions: [
-      'Why did you choose this particular episode?',
-      'What was the main topic discussed?',
-      'Who were the speakers or guests?',
-      'What was the most interesting point raised during the discussion?',
-      'Was there anything you disagreed with? Why?',
-      'Did you learn anything new?',
-      'Would you listen to more episodes of this podcast?',
-      'Do you think podcasts are a good way to learn about different subjects?'
-    ]
-  },
-  {
-    id: 9,
-    category: 'Culture & Entertainment',
-    title: 'ONE GAME',
-    questions: [
-      'Why did you choose this particular game?',
-      'Can you explain how people play it?',
-      'What skills or strategies does it require?',
-      'What makes it enjoyable or challenging?',
-      'Is it better to play alone or with other people?',
-      'Would you recommend it to someone who has never played it?',
-      'Do you think traditional games are becoming less popular?',
-      'If you could change one rule, what would it be?'
-    ]
-  },
-
-  // CATEGORY 2 – FOOD & PLACES
-  {
-    id: 10,
-    category: 'Food & Places',
-    title: 'ONE DISH',
-    questions: [
-      'Why did you choose this particular dish?',
-      'What are its main ingredients?',
-      'How is it prepared?',
-      'Where does this dish originally come from?',
-      'What makes its flavour or preparation special?',
-      'Do you consider it a healthy meal? Why or why not?',
-      'Would you recommend it to someone who has never tried it?',
-      'If you could change one ingredient, what would you change?'
-    ]
-  },
-  {
-    id: 11,
-    category: 'Food & Places',
-    title: 'ONE RESTAURANT',
-    questions: [
-      'Why did you choose this particular restaurant?',
-      'What kind of food does it serve?',
-      'How would you describe its atmosphere and decoration?',
-      'What is the best dish on the menu?',
-      'How would you describe the quality of the service?',
-      'Do you think the prices are reasonable?',
-      'What makes this restaurant different from other places?',
-      'Would you visit it again? Why or why not?'
-    ]
-  },
-  {
-    id: 12,
-    category: 'Food & Places',
-    title: 'ONE CAFÉ',
-    questions: [
-      'Why did you choose this particular café?',
-      'How would you describe its atmosphere?',
-      'What are its most popular drinks or food options?',
-      'Is it a good place to study, work, or meet friends?',
-      'Do you think its prices are reasonable?',
-      'What makes it different from other cafés?',
-      'Would you recommend it to tourists or visitors?',
-      'If you could improve something about it, what would it be?'
-    ]
-  },
-  {
-    id: 13,
-    category: 'Food & Places',
-    title: 'ONE PLACE',
-    questions: [
-      'Why did you choose this particular place?',
-      'What makes this place special or interesting?',
-      'What are the main attractions or things people can do there?',
-      'How would you describe the local culture and lifestyle?',
-      'What is the best time of the year to visit?',
-      'Do you think tourism has a positive or negative impact on this place?',
-      'Would you consider living there? Why or why not?',
-      'If you could visit only one attraction there, which would you choose?'
-    ]
-  },
-  {
-    id: 14,
-    category: 'Food & Places',
-    title: 'ONE HOTEL',
-    questions: [
-      'Why did you choose this particular hotel?',
-      'Where is it located?',
-      'What facilities and services does it offer?',
-      'How would you describe its rooms and overall atmosphere?',
-      'Do you think it offers good value for money?',
-      'What type of traveller would enjoy staying there?',
-      'Would you choose this hotel for your next holiday?',
-      'What would you improve about its services?'
-    ]
-  },
-  {
-    id: 15,
-    category: 'Food & Places',
-    title: 'ONE ATTRACTION',
-    questions: [
-      'Why did you choose this particular attraction?',
-      'What can visitors see and do there?',
-      'Is there any interesting history behind it?',
-      'What makes it different from other attractions?',
-      'Is it suitable for people of all ages?',
-      'Do you think the entrance fee is reasonable?',
-      'What would be the best time to visit?',
-      'Would you recommend it to someone visiting the area?'
-    ]
-  },
-  {
-    id: 16,
-    category: 'Food & Places',
-    title: 'ONE TRIP',
-    questions: [
-      'Where did you go, and why did you choose that destination?',
-      'Who did you travel with?',
-      'What was the most memorable experience?',
-      'Did anything unexpected happen during the trip?',
-      'What did you enjoy the most and the least?',
-      'Did you learn anything about the local culture?',
-      'Would you visit this destination again?',
-      'If you could do the trip again, would you change anything?'
-    ]
-  },
-
-  // CATEGORY 3 – PEOPLE & SOCIETY
-  {
-    id: 17,
-    category: 'People & Society',
-    title: 'ONE PERSON',
-    questions: [
-      'Why did you choose this person?',
-      'What are their most important achievements?',
-      'What challenges did they face during their life or career?',
-      'What personal qualities do you admire about them?',
-      'Do you think they are a good role model? Why or why not?',
-      'How have they influenced other people or society?',
-      'Would you like to meet this person? What would you ask them?',
-      'Do you think their legacy will remain important in the future?'
-    ]
-  },
-  {
-    id: 18,
-    category: 'People & Society',
-    title: 'ONE CELEBRITY',
-    questions: [
-      'Why did you choose this particular celebrity?',
-      'How did they become famous?',
-      'What are their most important achievements?',
-      'How would you describe their public image?',
-      'Do you think celebrities have too much influence on society?',
-      'Do you think their private lives should receive so much media attention?',
-      'Would you like to meet this celebrity? Why?',
-      'Do you think they will remain famous in the future?'
-    ]
-  },
-  {
-    id: 19,
-    category: 'People & Society',
-    title: 'ONE NEWS STORY',
-    questions: [
-      'What was the most interesting aspect of this news story?',
-      'Did you learn anything new from reading it?',
-      'Why do you think this story is important?',
-      'How might this event affect the people involved?',
-      'Do you think the media presented the story objectively?',
-      'Would you like to read more about this topic? Why?',
-      'Do you think social media helps people stay informed or spreads misinformation?',
-      'What do you think might happen next?'
-    ]
-  },
-  {
-    id: 20,
-    category: 'People & Society',
-    title: 'ONE HISTORICAL EVENT',
-    questions: [
-      'Why did you choose this historical event?',
-      'What happened, and when did it take place?',
-      'Who were the most important people involved?',
-      'What were the main causes of this event?',
-      'What were its most significant consequences?',
-      'How did it change society or the world?',
-      'Do you think something similar could happen today?',
-      'What can people learn from this historical event?'
-    ]
-  },
-  {
-    id: 21,
-    category: 'People & Society',
-    title: 'ONE PHOTOGRAPH',
-    questions: [
-      'Why did you choose this particular photograph?',
-      'Can you describe what we can see in the picture?',
-      'Where and when was it taken?',
-      'What do you think was happening when the photograph was taken?',
-      'What emotions or ideas does the image communicate?',
-      'Do you think the photograph tells a complete story?',
-      'How might different people interpret this image differently?',
-      "Do you think photographs can influence people's opinions about important events?"
-    ]
-  },
-  {
-    id: 22,
-    category: 'People & Society',
-    title: 'ONE SOCIAL ISSUE',
-    questions: [
-      'Why did you choose this particular social issue?',
-      'What are the main causes of this problem?',
-      'Who is most affected by it?',
-      'What consequences does it have for society?',
-      'Do you think governments are doing enough to address this issue?',
-      'What could individuals do to help?',
-      'Do you think this problem will become more serious in the future?',
-      'What would be the most effective solution?'
-    ]
-  },
-
-  // CATEGORY 4 – PERSONAL LIFE & EXPERIENCES
-  {
-    id: 23,
-    category: 'Personal Life & Experiences',
-    title: 'ONE HOBBY',
-    questions: [
-      'Why did you choose this particular hobby?',
-      'How did you become interested in it?',
-      'How much time do you usually spend doing it?',
-      'What skills does this hobby require?',
-      'What do you enjoy the most about it?',
-      'Is it an expensive hobby?',
-      'Would you recommend it to someone who wants to try something new?',
-      'Do you think you will continue this hobby in the future?'
-    ]
-  },
-  {
-    id: 24,
-    category: 'Personal Life & Experiences',
-    title: 'ONE PET',
-    questions: [
-      'Why did you choose this particular animal?',
-      'Can you describe its appearance and personality?',
-      'What are its most interesting habits?',
-      'What kind of care does it require?',
-      'What makes this animal a good or difficult pet?',
-      "How can having a pet influence someone's life?",
-      'Would you recommend this animal to other people?',
-      'If you could have any animal as a pet, would you choose the same one?'
-    ]
-  },
-  {
-    id: 25,
-    category: 'Personal Life & Experiences',
-    title: 'ONE POSSESSION',
-    questions: [
-      'What object did you choose, and why?',
-      'When and how did you get it?',
-      'How often do you use it?',
-      'Does it have any sentimental or practical value?',
-      'What would you do if you lost it?',
-      'Do you think people are too attached to material possessions?',
-      'Would you recommend this product to other people?',
-      'If you could replace it with something better, would you?'
-    ]
-  },
-  {
-    id: 26,
-    category: 'Personal Life & Experiences',
-    title: 'ONE EVENT',
-    questions: [
-      'What event did you choose, and when did it happen?',
-      'Why did you decide to attend it?',
-      'Who did you go with?',
-      'What was the most memorable moment?',
-      'Did anything unexpected happen?',
-      'How would you describe the atmosphere?',
-      'Would you attend this event again?',
-      'What would make the experience even better?'
-    ]
-  },
-  {
-    id: 27,
-    category: 'Personal Life & Experiences',
-    title: 'ONE CHILDHOOD MEMORY',
-    questions: [
-      'Why did you choose this particular memory?',
-      'How old were you when it happened?',
-      'Who was involved?',
-      'Can you describe what happened?',
-      'How did you feel at the time?',
-      'Do you remember any particular details about that day?',
-      'Does this memory mean something different to you now?',
-      "Do you think childhood experiences shape people's personalities?"
-    ]
-  },
-  {
-    id: 28,
-    category: 'Personal Life & Experiences',
-    title: 'ONE DREAM',
-    questions: [
-      'What is your dream or biggest ambition?',
-      'When did you first develop this dream?',
-      'Why is it important to you?',
-      'What challenges might prevent you from achieving it?',
-      'What steps would you need to take to make it happen?',
-      'Who could help or inspire you along the way?',
-      'How would your life change if you achieved this dream?',
-      'Do you think it is important to have dreams, even if they seem unrealistic?'
-    ]
-  },
-
-  // CATEGORY 5 – TECHNOLOGY & IDEAS
-  {
-    id: 29,
-    category: 'Technology & Ideas',
-    title: 'ONE APP OR WEBSITE',
-    questions: [
-      'Why did you choose this particular app or website?',
-      'What is its main purpose?',
-      'What are its most useful features?',
-      'How often do you use it?',
-      'What are its main advantages and disadvantages?',
-      "Do you think it has changed people's habits or routines?",
-      'Would you recommend it to someone who has never used it?',
-      'If you could add one new feature, what would it be?'
-    ]
-  },
-  {
-    id: 30,
-    category: 'Technology & Ideas',
-    title: 'ONE INVENTION',
-    questions: [
-      'Why did you choose this particular invention?',
-      'Who invented it, and when?',
-      'What problem was it originally designed to solve?',
-      "How has it changed people's lives?",
-      'Can you imagine living without it?',
-      'Do you think it has any negative consequences?',
-      'What would the world be like if this invention had never existed?',
-      'What invention do you think will be important in the future?'
-    ]
-  }
-];
-
-const INITIAL_TIME = 180; // 3 minutes in seconds
-
-export default function App() {
-  // ==========================================
-  // STATE MANAGEMENT
-  // ==========================================
-  const [selectedCategory, setSelectedCategory] = useState('All Categories');
-  const [usedTopicIds, setUsedTopicIds] = useState([]);
-  const [currentTopic, setCurrentTopic] = useState(null);
-  const [isAnimatingTopic, setIsAnimatingTopic] = useState(false);
-
-  // Timer states
-  const [timeLeft, setTimeLeft] = useState(INITIAL_TIME);
-  const [timerStatus, setTimerStatus] = useState('IDLE'); // 'IDLE' | 'RUNNING' | 'PAUSED' | 'FINISHED'
-  const endTimeRef = useRef(null);
-
-  // Question states
-  const [questionsRevealed, setQuestionsRevealed] = useState(false);
-  const [questionDisplayMode, setQuestionDisplayMode] = useState('ALL'); // 'ALL' | 'SINGLE' | 'RANDOM'
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [usedQuestionIndices, setUsedQuestionIndices] = useState([]);
-
-  // Modals & UI states
-  const [showAllTopicsModal, setShowAllTopicsModal] = useState(false);
-  const [showResetModal, setShowResetModal] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-
-  const questionsSectionRef = useRef(null);
-
-  // ==========================================
-  // DERIVED STATE & FILTERING
-  // ==========================================
-  const availableTopicsInFilter = useMemo(() => {
-    return TOPICS_DATA.filter((topic) => {
-      const matchesCategory =
-        selectedCategory === 'All Categories' || topic.category === selectedCategory;
-      const isNotUsed = !usedTopicIds.includes(topic.id);
-      return matchesCategory && isNotUsed;
-    });
-  }, [selectedCategory, usedTopicIds]);
-
-  const totalTopicsCount = TOPICS_DATA.length;
-  const completedTopicsCount = usedTopicIds.length;
-  const remainingTopicsCount = totalTopicsCount - completedTopicsCount;
-  const allTopicsExhausted = remainingTopicsCount === 0;
-
-  // ==========================================
-  // ACCURATE DRIFT-FREE COUNTDOWN TIMER
-  // ==========================================
-  useEffect(() => {
-    let interval = null;
-
-    if (timerStatus === 'RUNNING') {
-      interval = setInterval(() => {
-        if (!endTimeRef.current) return;
-        const now = Date.now();
-        const remainingMs = endTimeRef.current - now;
-        const remainingSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
-
-        setTimeLeft(remainingSeconds);
-
-        if (remainingSeconds <= 0) {
-          setTimerStatus('FINISHED');
-          endTimeRef.current = null;
-          clearInterval(interval);
-        }
-      }, 200);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ONE THING, MANY QUESTIONS – Speaking Challenge</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #F8FAFC;
+      color: #0F172A;
     }
-
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [timerStatus]);
-
-  const startTimer = () => {
-    endTimeRef.current = Date.now() + timeLeft * 1000;
-    setTimerStatus('RUNNING');
-  };
-
-  const pauseTimer = () => {
-    if (endTimeRef.current) {
-      const remainingSeconds = Math.max(
-        0,
-        Math.ceil((endTimeRef.current - Date.now()) / 1000)
-      );
-      setTimeLeft(remainingSeconds);
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
     }
-    endTimeRef.current = null;
-    setTimerStatus('PAUSED');
-  };
-
-  const resumeTimer = () => {
-    endTimeRef.current = Date.now() + timeLeft * 1000;
-    setTimerStatus('RUNNING');
-  };
-
-  const restartTimer = () => {
-    endTimeRef.current = null;
-    setTimeLeft(INITIAL_TIME);
-    setTimerStatus('IDLE');
-  };
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-  };
-
-  // ==========================================
-  // TOPIC SELECTION & NAVIGATION
-  // ==========================================
-  const selectTopicObject = (topic) => {
-    setIsAnimatingTopic(true);
-    setTimeout(() => {
-      setCurrentTopic(topic);
-      setUsedTopicIds((prev) => (prev.includes(topic.id) ? prev : [...prev, topic.id]));
-      // Reset timer and hide questions for the new topic
-      endTimeRef.current = null;
-      setTimeLeft(INITIAL_TIME);
-      setTimerStatus('IDLE');
-      setQuestionsRevealed(false);
-      setQuestionDisplayMode('ALL');
-      setCurrentQuestionIndex(0);
-      setUsedQuestionIndices([]);
-      setIsAnimatingTopic(false);
-    }, 180);
-  };
-
-  const handleDrawRandomTopic = () => {
-    if (availableTopicsInFilter.length === 0) return;
-    const randomIndex = Math.floor(Math.random() * availableTopicsInFilter.length);
-    const chosen = availableTopicsInFilter[randomIndex];
-    selectTopicObject(chosen);
-  };
-
-  const handleManualSelectTopic = (topic) => {
-    selectTopicObject(topic);
-    setShowAllTopicsModal(false);
-  };
-
-  // ==========================================
-  // QUESTION CONTROLS & RANDOM QUESTION MODE
-  // ==========================================
-  const handleRevealQuestions = () => {
-    setQuestionsRevealed(true);
-    if (usedQuestionIndices.length === 0) {
-      setUsedQuestionIndices([0]);
+    .topic-card-transition {
+      transition: opacity 180ms ease-in-out, transform 180ms ease-in-out;
     }
-    setTimeout(() => {
-      questionsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
-  };
-
-  const handleHideQuestions = () => {
-    setQuestionsRevealed(false);
-  };
-
-  const handleRandomQuestion = () => {
-    if (!currentTopic) return;
-    const totalQ = currentTopic.questions.length; // 8
-
-    if (!questionsRevealed) {
-      setQuestionsRevealed(true);
+    .card-animating {
+      opacity: 0;
+      transform: scale(0.97);
     }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-indigo-600 selection:text-white">
 
-    // Find unvisited questions
-    let currentUsed = usedQuestionIndices;
-    if (currentUsed.length >= totalQ) {
-      // All 8 questions have been selected once; reset pool to start fresh cycle
-      currentUsed = [];
-    }
-
-    const availableIndices = Array.from({ length: totalQ }, (_, i) => i).filter(
-      (idx) => !currentUsed.includes(idx)
-    );
-
-    const randomIdx =
-      availableIndices[Math.floor(Math.random() * availableIndices.length)];
-
-    setQuestionDisplayMode('SINGLE');
-    setCurrentQuestionIndex(randomIdx);
-    setUsedQuestionIndices([...currentUsed, randomIdx]);
-
-    setTimeout(() => {
-      questionsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
-  };
-
-  const handlePrevQuestion = () => {
-    if (!currentTopic) return;
-    const nextIdx =
-      currentQuestionIndex > 0
-        ? currentQuestionIndex - 1
-        : currentTopic.questions.length - 1;
-    setCurrentQuestionIndex(nextIdx);
-    if (!usedQuestionIndices.includes(nextIdx)) {
-      setUsedQuestionIndices((prev) => [...prev, nextIdx]);
-    }
-  };
-
-  const handleNextQuestion = () => {
-    if (!currentTopic) return;
-    const nextIdx =
-      currentQuestionIndex < currentTopic.questions.length - 1
-        ? currentQuestionIndex + 1
-        : 0;
-    setCurrentQuestionIndex(nextIdx);
-    if (!usedQuestionIndices.includes(nextIdx)) {
-      setUsedQuestionIndices((prev) => [...prev, nextIdx]);
-    }
-  };
-
-  // ==========================================
-  // RESET & FULLSCREEN
-  // ==========================================
-  const confirmResetAll = () => {
-    endTimeRef.current = null;
-    setUsedTopicIds([]);
-    setCurrentTopic(null);
-    setTimeLeft(INITIAL_TIME);
-    setTimerStatus('IDLE');
-    setQuestionsRevealed(false);
-    setQuestionDisplayMode('ALL');
-    setCurrentQuestionIndex(0);
-    setUsedQuestionIndices([]);
-    setSelectedCategory('All Categories');
-    setShowResetModal(false);
-  };
-
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen?.().catch(() => {});
-      setIsFullscreen(true);
-    } else {
-      document.exitFullscreen?.().catch(() => {});
-      setIsFullscreen(false);
-    }
-  };
-
-  useEffect(() => {
-    const handleFsChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-    document.addEventListener('fullscreenchange', handleFsChange);
-    return () => document.removeEventListener('fullscreenchange', handleFsChange);
-  }, []);
-
-  return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col font-sans selection:bg-indigo-600 selection:text-white">
-      {/* ==========================================
-          TOP STATUS & TEACHER UTILITY BAR
-      ========================================== */}
-      <header className="w-full bg-white border-b border-slate-200 px-4 sm:px-8 py-3.5 sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
-          {/* Brand / Progress Status */}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2.5">
-              <span className="inline-block w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
-              <span className="font-bold tracking-tight text-slate-900 text-sm sm:text-base">
-                ONE THING, MANY QUESTIONS
-              </span>
-            </div>
-            <div className="h-4 w-[1px] bg-slate-200 hidden sm:block"></div>
-            <div className="flex items-center gap-2 text-xs sm:text-sm font-medium text-slate-600 bg-slate-100 px-3 py-1 rounded-full">
-              <span>
-                TOPIC <strong className="text-slate-900">{completedTopicsCount}</strong> OF{' '}
-                <strong className="text-slate-900">{totalTopicsCount}</strong>
-              </span>
-              <span className="text-slate-300">•</span>
-              <span>{remainingTopicsCount} remaining</span>
-            </div>
-          </div>
-
-          {/* Secondary Teacher Controls */}
-          <div className="flex items-center flex-wrap gap-2">
-            <button
-              onClick={() => setShowAllTopicsModal(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/80 transition-colors"
-              title="Browse and manually select from all 30 topics"
-            >
-              <Grid className="w-4 h-4 text-slate-500" />
-              <span>SHOW ALL TOPICS</span>
-            </button>
-
-            <button
-              onClick={() => setShowResetModal(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-700 hover:text-red-700 bg-slate-100 hover:bg-red-50 transition-colors"
-              title="Reset all progress and start over"
-            >
-              <RotateCcw className="w-4 h-4 text-slate-500" />
-              <span>RESET ALL</span>
-            </button>
-
-            <button
-              onClick={toggleFullscreen}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/80 transition-colors"
-              title="Toggle Classroom TV Fullscreen"
-            >
-              {isFullscreen ? (
-                <Minimize2 className="w-4 h-4 text-slate-500" />
-              ) : (
-                <Maximize2 className="w-4 h-4 text-slate-500" />
-              )}
-              <span className="hidden md:inline">FULLSCREEN</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* ==========================================
-          MAIN CLASSROOM WORKSPACE
-      ========================================== */}
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-8 py-8 sm:py-12 flex flex-col items-center">
-        {/* Title & Subtitle Header */}
-        <div className="text-center max-w-2xl mx-auto mb-8">
-          <p className="text-xs sm:text-sm font-semibold uppercase tracking-widest text-indigo-600 mb-1">
-            Individual Speaking Challenge
-          </p>
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-2">
+  <!-- ==========================================
+       TOP STATUS & TEACHER UTILITY BAR
+  ========================================== -->
+  <header class="w-full bg-white border-b border-slate-200 px-4 sm:px-8 py-3.5 sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <!-- Brand & Progress Indicator -->
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2.5">
+          <span class="inline-block w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
+          <span class="font-bold tracking-tight text-slate-900 text-sm sm:text-base">
             ONE THING, MANY QUESTIONS
-          </h1>
-          <p className="text-slate-500 text-sm sm:text-base">
-            "Choose a topic. Talk about it. Answer the questions."
+          </span>
+        </div>
+        <div class="h-4 w-[1px] bg-slate-200 hidden sm:block"></div>
+        <div class="flex items-center gap-2 text-xs sm:text-sm font-medium text-slate-600 bg-slate-100 px-3 py-1 rounded-full">
+          <span id="progress-badge-text">
+            TOPIC <strong class="text-slate-900">0</strong> OF <strong class="text-slate-900">30</strong>
+          </span>
+          <span class="text-slate-300">•</span>
+          <span id="remaining-badge-text">30 remaining</span>
+        </div>
+      </div>
+
+      <!-- Teacher Utility Buttons -->
+      <div class="flex items-center flex-wrap gap-2">
+        <button
+          id="btn-show-all-topics"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/80 transition-colors cursor-pointer"
+          title="Browse and manually select from all 30 topics"
+        >
+          <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+            <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+          </svg>
+          <span>SHOW ALL TOPICS</span>
+        </button>
+
+        <button
+          id="btn-reset-all"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-700 hover:text-red-700 bg-slate-100 hover:bg-red-50 transition-colors cursor-pointer"
+          title="Reset all progress and start over"
+        >
+          <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 3v5h5"></path>
+          </svg>
+          <span>RESET ALL</span>
+        </button>
+
+        <button
+          id="btn-fullscreen"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/80 transition-colors cursor-pointer"
+          title="Toggle Classroom TV Fullscreen"
+        >
+          <svg id="icon-fullscreen-enter" class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path>
+          </svg>
+          <svg id="icon-fullscreen-exit" class="w-4 h-4 text-slate-500 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"></path>
+          </svg>
+          <span class="hidden md:inline">FULLSCREEN</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================
+       MAIN CLASSROOM WORKSPACE
+  ========================================== -->
+  <main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-8 py-8 sm:py-12 flex flex-col items-center">
+
+    <!-- Main Title & Subtitle -->
+    <div class="text-center max-w-2xl mx-auto mb-8">
+      <p class="text-xs sm:text-sm font-semibold uppercase tracking-widest text-indigo-600 mb-1">
+        Individual Speaking Challenge
+      </p>
+      <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-2">
+        ONE THING, MANY QUESTIONS
+      </h1>
+      <p class="text-slate-500 text-sm sm:text-base">
+        "Choose a topic. Talk about it. Answer the questions."
+      </p>
+    </div>
+
+    <!-- Category Filter Buttons -->
+    <div class="w-full mb-8">
+      <div id="category-filters-container" class="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
+        <!-- Populated by JavaScript -->
+      </div>
+    </div>
+
+    <!-- Round Complete Banner (Hidden until all 30 topics are drawn) -->
+    <div id="round-complete-banner" class="hidden w-full mb-8 bg-indigo-50 border border-indigo-200 rounded-2xl p-6 text-center flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3 text-left">
+        <svg class="w-8 h-8 text-indigo-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <div>
+          <h3 class="font-bold text-slate-900 text-lg">
+            Round Complete! All 30 topics have been selected.
+          </h3>
+          <p class="text-slate-600 text-sm">
+            You have completed the entire topic database for this session.
+          </p>
+        </div>
+      </div>
+      <button
+        id="btn-banner-reset"
+        class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm shrink-0 transition-colors cursor-pointer"
+      >
+        RESET ALL TOPICS
+      </button>
+    </div>
+
+    <!-- ==========================================
+         MAIN TOPIC CARD
+    ========================================== -->
+    <div id="topic-card" class="w-full bg-white rounded-3xl border border-slate-200 shadow-sm px-6 py-12 sm:px-14 sm:py-16 text-center topic-card-transition">
+      <!-- Initial State (Before a topic is drawn) -->
+      <div id="topic-initial-view" class="max-w-xl mx-auto py-4">
+        <span class="inline-block text-xs sm:text-sm font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-3.5 py-1.5 rounded-full mb-4">
+          YOUR NEXT CHALLENGE
+        </span>
+        <h2 class="text-2xl sm:text-4xl font-bold text-slate-800 mb-8 leading-tight">
+          "Ready to put your English to the test?"
+        </h2>
+
+        <div id="initial-draw-wrapper">
+          <button
+            id="btn-draw-initial"
+            class="inline-flex items-center justify-center gap-3 px-8 py-4 sm:px-10 sm:py-5 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-bold text-base sm:text-lg rounded-2xl shadow-sm transition-all cursor-pointer"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <polyline points="16 3 21 3 21 8"></polyline>
+              <line x1="4" y1="20" x2="21" y2="3"></line>
+              <polyline points="21 16 21 21 16 21"></polyline>
+              <line x1="15" y1="15" x2="21" y2="21"></line>
+              <line x1="4" y1="4" x2="9" y2="9"></line>
+            </svg>
+            <span>DRAW A TOPIC</span>
+          </button>
+        </div>
+
+        <div id="initial-category-empty-msg" class="hidden space-y-4">
+          <p id="empty-category-text" class="text-amber-700 bg-amber-50 border border-amber-200 px-4 py-3 rounded-xl text-sm font-medium inline-block">
+            No remaining topics in this category.
+          </p>
+          <div>
+            <button
+              id="btn-switch-all-categories"
+              class="px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-xl text-sm transition-colors cursor-pointer"
+            >
+              Switch to All Categories
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selected Topic State -->
+      <div id="topic-selected-view" class="hidden max-w-3xl mx-auto">
+        <div class="inline-flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-4 py-1.5 rounded-full mb-4">
+          <span id="selected-topic-category">CATEGORY: FOOD & PLACES</span>
+        </div>
+
+        <h2 id="selected-topic-title" class="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-slate-900 my-4 leading-none">
+          ONE RESTAURANT
+        </h2>
+
+        <div class="mt-8 pt-6 border-t border-slate-100 flex flex-wrap items-center justify-center gap-3">
+          <button
+            id="btn-draw-another"
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-all cursor-pointer disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <polyline points="16 3 21 3 21 8"></polyline>
+              <line x1="4" y1="20" x2="21" y2="3"></line>
+              <polyline points="21 16 21 21 16 21"></polyline>
+              <line x1="15" y1="15" x2="21" y2="21"></line>
+              <line x1="4" y1="4" x2="9" y2="9"></line>
+            </svg>
+            <span>DRAW ANOTHER TOPIC</span>
+          </button>
+
+          <button
+            id="btn-choose-manually"
+            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+              <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+              <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+              <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+            </svg>
+            <span>CHOOSE MANUALLY</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         3-MINUTE SPEAKING CHALLENGE SECTION
+    ========================================== -->
+    <div id="speaking-challenge-section" class="hidden w-full mt-8 bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-10 text-center">
+      <div class="max-w-2xl mx-auto">
+        <span class="inline-block text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">
+          PART 1 • INDIVIDUAL PRESENTATION
+        </span>
+        <h3 class="text-xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+          TALK ABOUT IT FOR 3 MINUTES!
+        </h3>
+        <p class="text-slate-600 text-sm sm:text-base leading-relaxed mb-8">
+          "Describe your chosen topic, provide interesting details, explain its background, and express your personal opinions."
+        </p>
+
+        <!-- High-Visibility Classroom Countdown Timer -->
+        <div
+          id="timer-box"
+          class="inline-flex flex-col items-center justify-center px-10 py-6 sm:px-16 sm:py-8 rounded-2xl border-2 bg-slate-50 border-slate-200 text-slate-900 mb-8 transition-colors"
+        >
+          <div
+            id="timer-display"
+            class="text-6xl sm:text-8xl md:text-9xl font-black tracking-tight tabular-nums leading-none"
+          >
+            03:00
+          </div>
+
+          <!-- TIME'S UP Message -->
+          <div id="times-up-message" class="hidden mt-4">
+            <p class="text-xl sm:text-2xl font-extrabold text-amber-700 tracking-wide">
+              TIME'S UP!
+            </p>
+            <p class="text-sm sm:text-base font-medium text-amber-800 mt-0.5">
+              "Now it's time for the interview."
+            </p>
+          </div>
+        </div>
+
+        <!-- Timer Controls -->
+        <div class="flex flex-wrap items-center justify-center gap-3">
+          <button
+            id="btn-timer-start"
+            class="inline-flex items-center gap-2 px-7 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm sm:text-base shadow-sm transition-colors cursor-pointer"
+          >
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span>START</span>
+          </button>
+
+          <button
+            id="btn-timer-pause"
+            class="hidden items-center gap-2 px-7 py-3.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-sm sm:text-base shadow-sm transition-colors cursor-pointer"
+          >
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+              <rect x="6" y="4" width="4" height="16"></rect>
+              <rect x="14" y="4" width="4" height="16"></rect>
+            </svg>
+            <span>PAUSE</span>
+          </button>
+
+          <button
+            id="btn-timer-resume"
+            class="hidden items-center gap-2 px-7 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm sm:text-base shadow-sm transition-colors cursor-pointer"
+          >
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span>RESUME</span>
+          </button>
+
+          <button
+            id="btn-timer-restart"
+            class="inline-flex items-center gap-2 px-5 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm sm:text-base transition-colors cursor-pointer"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 3v5h5"></path>
+            </svg>
+            <span>RESTART TIMER</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Reveal Questions Action Bar -->
+      <div class="mt-10 pt-8 border-t border-slate-200 flex flex-wrap items-center justify-center gap-4">
+        <button
+          id="btn-reveal-questions"
+          class="inline-flex items-center gap-2.5 px-8 py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl text-base sm:text-lg shadow-sm transition-all cursor-pointer"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          <span>REVEAL QUESTIONS</span>
+        </button>
+
+        <button
+          id="btn-hide-questions"
+          class="hidden items-center gap-2 px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition-colors cursor-pointer"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+          </svg>
+          <span>HIDE QUESTIONS</span>
+        </button>
+
+        <button
+          id="btn-random-question"
+          class="inline-flex items-center gap-2 px-5 py-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold rounded-xl text-sm transition-colors cursor-pointer"
+          title="Pick a random unasked question from this topic"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+            <path d="M16 8h.01"></path>
+            <path d="M12 12h.01"></path>
+            <path d="M8 16h.01"></path>
+            <path d="M8 8h.01"></path>
+            <path d="M16 16h.01"></path>
+          </svg>
+          <span>RANDOM QUESTION</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         INTERVIEW QUESTIONS SECTION
+    ========================================== -->
+    <div id="interview-questions-section" class="hidden w-full mt-8 bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-10 transition-all">
+      <!-- Interview Instructions Header -->
+      <div class="border-b border-slate-200 pb-6 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <span class="inline-block text-xs font-bold uppercase tracking-widest text-indigo-600 mb-1">
+            PART 2 • FOLLOW-UP DISCUSSION
+          </span>
+          <h3 class="text-xl sm:text-2xl font-extrabold text-slate-900">
+            INTERVIEW & DISCUSSION – 5–7 MINUTES
+          </h3>
+          <p class="text-slate-600 text-sm sm:text-base mt-1">
+            "Answer the questions, explain your opinions, justify your ideas, and provide specific examples."
           </p>
         </div>
 
-        {/* Category Filter Bar */}
-        <div className="w-full mb-8">
-          <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
-            {CATEGORIES.map((category) => {
-              const isSelected = selectedCategory === category;
-              const countInCat = TOPICS_DATA.filter(
-                (t) =>
-                  (category === 'All Categories' || t.category === category) &&
-                  !usedTopicIds.includes(t.id)
-              ).length;
-
-              return (
-                <button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
-                  className={`px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center gap-2 border ${
-                    isSelected
-                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                      : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:text-slate-900'
-                  }`}
-                >
-                  <span>{category}</span>
-                  <span
-                    className={`text-[11px] px-1.5 py-0.5 rounded-full font-semibold ${
-                      isSelected
-                        ? 'bg-indigo-700 text-indigo-100'
-                        : 'bg-slate-100 text-slate-500'
-                    }`}
-                  >
-                    {countInCat}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Round Complete Notification Banner (when all 30 topics are drawn) */}
-        {allTopicsExhausted && (
-          <div className="w-full mb-8 bg-indigo-50 border border-indigo-200 rounded-2xl p-6 text-center flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3 text-left">
-              <CheckCircle2 className="w-8 h-8 text-indigo-600 shrink-0" />
-              <div>
-                <h3 className="font-bold text-slate-900 text-lg">
-                  Round Complete! All 30 topics have been selected.
-                </h3>
-                <p className="text-slate-600 text-sm">
-                  You have completed the entire topic database for this session.
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowResetModal(true)}
-              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm shrink-0 transition-colors"
-            >
-              RESET ALL TOPICS
-            </button>
-          </div>
-        )}
-
-        {/* ==========================================
-            MAIN TOPIC CARD
-        ========================================== */}
-        <div
-          className={`w-full bg-white rounded-3xl border border-slate-200 shadow-sm px-6 py-12 sm:px-14 sm:py-16 text-center transition-all duration-200 ${
-            isAnimatingTopic ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-          }`}
-        >
-          {!currentTopic ? (
-            /* Initial Unselected State */
-            <div className="max-w-xl mx-auto py-4">
-              <span className="inline-block text-xs sm:text-sm font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-3.5 py-1.5 rounded-full mb-4">
-                YOUR NEXT CHALLENGE
-              </span>
-              <h2 className="text-2xl sm:text-4xl font-bold text-slate-800 mb-8 leading-tight">
-                "Ready to put your English to the test?"
-              </h2>
-
-              {availableTopicsInFilter.length > 0 ? (
-                <button
-                  onClick={handleDrawRandomTopic}
-                  className="inline-flex items-center justify-center gap-3 px-8 py-4 sm:px-10 sm:py-5 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-bold text-base sm:text-lg rounded-2xl shadow-sm transition-all cursor-pointer"
-                >
-                  <Shuffle className="w-5 h-5" />
-                  <span>DRAW A TOPIC</span>
-                </button>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-amber-700 bg-amber-50 border border-amber-200 px-4 py-3 rounded-xl text-sm font-medium inline-block">
-                    No remaining topics in "{selectedCategory}". Select another category or reset.
-                  </p>
-                  <div>
-                    <button
-                      onClick={() => setSelectedCategory('All Categories')}
-                      className="px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-xl text-sm transition-colors"
-                    >
-                      Switch to All Categories
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            /* Active Selected Topic State */
-            <div className="max-w-3xl mx-auto">
-              <div className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-4 py-1.5 rounded-full mb-4">
-                <span>CATEGORY: {currentTopic.category.toUpperCase()}</span>
-              </div>
-
-              <h2 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-slate-900 my-4 leading-none">
-                {currentTopic.title}
-              </h2>
-
-              {/* Draw Another Topic Button */}
-              <div className="mt-8 pt-6 border-t border-slate-100 flex flex-wrap items-center justify-center gap-3">
-                <button
-                  onClick={handleDrawRandomTopic}
-                  disabled={availableTopicsInFilter.length === 0}
-                  className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all ${
-                    availableTopicsInFilter.length > 0
-                      ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm cursor-pointer'
-                      : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                  }`}
-                >
-                  <Shuffle className="w-4 h-4" />
-                  <span>DRAW ANOTHER TOPIC</span>
-                </button>
-
-                <button
-                  onClick={() => setShowAllTopicsModal(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
-                >
-                  <Grid className="w-4 h-4" />
-                  <span>CHOOSE MANUALLY</span>
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* ==========================================
-            3-MINUTE SPEAKING CHALLENGE SECTION
-        ========================================== */}
-        {currentTopic && (
-          <div className="w-full mt-8 bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-10 text-center">
-            <div className="max-w-2xl mx-auto">
-              <span className="inline-block text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">
-                PART 1 • INDIVIDUAL PRESENTATION
-              </span>
-              <h3 className="text-xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
-                TALK ABOUT IT FOR 3 MINUTES!
-              </h3>
-              <p className="text-slate-600 text-sm sm:text-base leading-relaxed mb-8">
-                "Describe your chosen topic, provide interesting details, explain its background, and express your personal opinions."
-              </p>
-
-              {/* High-Visibility Classroom Countdown Timer */}
-              <div
-                className={`inline-flex flex-col items-center justify-center px-10 py-6 sm:px-16 sm:py-8 rounded-2xl border-2 mb-8 transition-colors ${
-                  timerStatus === 'FINISHED'
-                    ? 'bg-amber-50 border-amber-300 text-amber-900'
-                    : timerStatus === 'RUNNING'
-                    ? 'bg-indigo-50/50 border-indigo-200 text-slate-900'
-                    : 'bg-slate-50 border-slate-200 text-slate-900'
-                }`}
-              >
-                <div
-                  className="text-6xl sm:text-8xl md:text-9xl font-black tracking-tight tabular-nums leading-none"
-                  style={{ fontVariantNumeric: 'tabular-nums' }}
-                >
-                  {formatTime(timeLeft)}
-                </div>
-
-                {timerStatus === 'FINISHED' && (
-                  <div className="mt-4 animate-fade-in">
-                    <p className="text-xl sm:text-2xl font-extrabold text-amber-700 tracking-wide">
-                      TIME'S UP!
-                    </p>
-                    <p className="text-sm sm:text-base font-medium text-amber-800 mt-0.5">
-                      "Now it's time for the interview."
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Timer Functional Controls */}
-              <div className="flex flex-wrap items-center justify-center gap-3">
-                {timerStatus === 'IDLE' && (
-                  <button
-                    onClick={startTimer}
-                    className="inline-flex items-center gap-2 px-7 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm sm:text-base shadow-sm transition-colors cursor-pointer"
-                  >
-                    <Play className="w-5 h-5 fill-current" />
-                    <span>START</span>
-                  </button>
-                )}
-
-                {timerStatus === 'RUNNING' && (
-                  <button
-                    onClick={pauseTimer}
-                    className="inline-flex items-center gap-2 px-7 py-3.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-sm sm:text-base shadow-sm transition-colors cursor-pointer"
-                  >
-                    <Pause className="w-5 h-5 fill-current" />
-                    <span>PAUSE</span>
-                  </button>
-                )}
-
-                {timerStatus === 'PAUSED' && (
-                  <button
-                    onClick={resumeTimer}
-                    className="inline-flex items-center gap-2 px-7 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm sm:text-base shadow-sm transition-colors cursor-pointer"
-                  >
-                    <Play className="w-5 h-5 fill-current" />
-                    <span>RESUME</span>
-                  </button>
-                )}
-
-                <button
-                  onClick={restartTimer}
-                  className="inline-flex items-center gap-2 px-5 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm sm:text-base transition-colors cursor-pointer"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  <span>RESTART TIMER</span>
-                </button>
-              </div>
-            </div>
-
-            {/* ==========================================
-                REVEAL QUESTIONS ACTION BAR
-            ========================================== */}
-            <div className="mt-10 pt-8 border-t border-slate-200 flex flex-wrap items-center justify-center gap-4">
-              {!questionsRevealed ? (
-                <button
-                  onClick={handleRevealQuestions}
-                  className="inline-flex items-center gap-2.5 px-8 py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl text-base sm:text-lg shadow-sm transition-all cursor-pointer"
-                >
-                  <Eye className="w-5 h-5" />
-                  <span>REVEAL QUESTIONS</span>
-                </button>
-              ) : (
-                <button
-                  onClick={handleHideQuestions}
-                  className="inline-flex items-center gap-2 px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition-colors cursor-pointer"
-                >
-                  <EyeOff className="w-4 h-4" />
-                  <span>HIDE QUESTIONS</span>
-                </button>
-              )}
-
-              <button
-                onClick={handleRandomQuestion}
-                className="inline-flex items-center gap-2 px-5 py-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold rounded-xl text-sm transition-colors cursor-pointer"
-                title="Pick a random unasked question from this topic"
-              >
-                <Dices className="w-4 h-4" />
-                <span>RANDOM QUESTION</span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ==========================================
-            INTERVIEW QUESTIONS SECTION
-        ========================================== */}
-        {currentTopic && questionsRevealed && (
-          <div
-            ref={questionsSectionRef}
-            className="w-full mt-8 bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-10 transition-all"
+        <!-- Display Mode Switcher -->
+        <div class="flex flex-wrap items-center gap-2 shrink-0">
+          <button
+            id="btn-mode-all"
+            class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors cursor-pointer bg-indigo-600 text-white"
           >
-            {/* Interview Instructions Header */}
-            <div className="border-b border-slate-200 pb-6 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div>
-                <span className="inline-block text-xs font-bold uppercase tracking-widest text-indigo-600 mb-1">
-                  PART 2 • FOLLOW-UP DISCUSSION
-                </span>
-                <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900">
-                  INTERVIEW & DISCUSSION – 5–7 MINUTES
-                </h3>
-                <p className="text-slate-600 text-sm sm:text-base mt-1">
-                  "Answer the questions, explain your opinions, justify your ideas, and provide specific examples."
-                </p>
-              </div>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <line x1="8" y1="6" x2="21" y2="6"></line>
+              <line x1="8" y1="12" x2="21" y2="12"></line>
+              <line x1="8" y1="18" x2="21" y2="18"></line>
+              <line x1="3" y1="6" x2="3.01" y2="6"></line>
+              <line x1="3" y1="12" x2="3.01" y2="12"></line>
+              <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg>
+            <span>SHOW ALL QUESTIONS</span>
+          </button>
 
-              {/* Display Mode Switcher */}
-              <div className="flex flex-wrap items-center gap-2 shrink-0">
-                <button
-                  onClick={() => setQuestionDisplayMode('ALL')}
-                  className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors ${
-                    questionDisplayMode === 'ALL'
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                  }`}
-                >
-                  <List className="w-4 h-4" />
-                  <span>SHOW ALL QUESTIONS</span>
-                </button>
-
-                <button
-                  onClick={() => setQuestionDisplayMode('SINGLE')}
-                  className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors ${
-                    questionDisplayMode === 'SINGLE'
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                  }`}
-                >
-                  <Layers className="w-4 h-4" />
-                  <span>ONE QUESTION AT A TIME</span>
-                </button>
-              </div>
-            </div>
-
-            {/* MODE 1: SHOW ALL QUESTIONS */}
-            {questionDisplayMode === 'ALL' && (
-              <ol className="space-y-4">
-                {currentTopic.questions.map((question, idx) => (
-                  <li
-                    key={idx}
-                    onClick={() => {
-                      setCurrentQuestionIndex(idx);
-                      setQuestionDisplayMode('SINGLE');
-                      if (!usedQuestionIndices.includes(idx)) {
-                        setUsedQuestionIndices((prev) => [...prev, idx]);
-                      }
-                    }}
-                    className="group flex items-start gap-4 p-4 sm:p-5 rounded-2xl bg-slate-50 hover:bg-indigo-50/60 border border-slate-200/80 hover:border-indigo-200 transition-colors cursor-pointer"
-                    title="Click to focus on this question"
-                  >
-                    <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-slate-200 group-hover:border-indigo-300 group-hover:bg-indigo-600 group-hover:text-white text-slate-700 font-bold text-sm shrink-0 transition-colors">
-                      {idx + 1}
-                    </span>
-                    <span className="text-lg sm:text-xl font-medium text-slate-800 leading-relaxed">
-                      {question}
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            )}
-
-            {/* MODE 2: ONE QUESTION AT A TIME */}
-            {questionDisplayMode === 'SINGLE' && (
-              <div className="py-4">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3.5 py-1.5 rounded-full">
-                    QUESTION {currentQuestionIndex + 1} OF {currentTopic.questions.length}
-                  </span>
-
-                  <span className="text-xs text-slate-500 font-medium">
-                    {usedQuestionIndices.length} of {currentTopic.questions.length} questions visited
-                  </span>
-                </div>
-
-                {/* Single Prominent Question Card for TV readability */}
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-8 sm:p-12 my-4 text-center min-h-[180px] flex items-center justify-center">
-                  <p className="text-2xl sm:text-4xl font-bold text-slate-900 leading-snug max-w-3xl">
-                    {currentTopic.questions[currentQuestionIndex]}
-                  </p>
-                </div>
-
-                {/* Question Navigation Controls */}
-                <div className="flex flex-wrap items-center justify-between gap-4 mt-6">
-                  <button
-                    onClick={handlePrevQuestion}
-                    className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-sm sm:text-base transition-colors cursor-pointer"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                    <span>PREVIOUS</span>
-                  </button>
-
-                  {/* Question Number Dots */}
-                  <div className="flex items-center gap-1.5">
-                    {currentTopic.questions.map((_, idx) => {
-                      const isCurrent = idx === currentQuestionIndex;
-                      const isVisited = usedQuestionIndices.includes(idx);
-                      return (
-                        <button
-                          key={idx}
-                          onClick={() => {
-                            setCurrentQuestionIndex(idx);
-                            if (!usedQuestionIndices.includes(idx)) {
-                              setUsedQuestionIndices((prev) => [...prev, idx]);
-                            }
-                          }}
-                          className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${
-                            isCurrent
-                              ? 'bg-indigo-600 text-white scale-110'
-                              : isVisited
-                              ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
-                              : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                          }`}
-                        >
-                          {idx + 1}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <button
-                    onClick={handleNextQuestion}
-                    className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm sm:text-base transition-colors cursor-pointer"
-                  >
-                    <span>NEXT</span>
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Bottom Teacher Question Bar */}
-            <div className="mt-8 pt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4 text-xs sm:text-sm text-slate-500">
-              <span>Tip: The teacher may ask additional spontaneous follow-up questions.</span>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={handleRandomQuestion}
-                  className="inline-flex items-center gap-1.5 font-semibold text-indigo-600 hover:text-indigo-800"
-                >
-                  <Dices className="w-4 h-4" />
-                  <span>Draw Random Question</span>
-                </button>
-                <span>•</span>
-                <button
-                  onClick={handleHideQuestions}
-                  className="inline-flex items-center gap-1.5 font-semibold text-slate-600 hover:text-slate-900"
-                >
-                  <EyeOff className="w-4 h-4" />
-                  <span>Hide Questions</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
-
-      {/* ==========================================
-           PERSISTENT TEACHER FOOTER BAR
-      ========================================== */}
-      <footer className="w-full bg-white border-t border-slate-200 px-4 sm:px-8 py-4 mt-auto">
-        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4 text-xs sm:text-sm text-slate-500">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-slate-700">Teacher Controls:</span>
-            <button
-              onClick={handleDrawRandomTopic}
-              disabled={availableTopicsInFilter.length === 0}
-              className="underline hover:text-indigo-600 disabled:opacity-40 cursor-pointer"
-            >
-              Draw topic
-            </button>
-            <span>·</span>
-            {currentTopic && (
-              <>
-                <button
-                  onClick={
-                    questionsRevealed ? handleHideQuestions : handleRevealQuestions
-                  }
-                  className="underline hover:text-indigo-600 cursor-pointer"
-                >
-                  {questionsRevealed ? 'Hide questions' : 'Reveal questions'}
-                </button>
-                <span>·</span>
-                <button
-                  onClick={restartTimer}
-                  className="underline hover:text-indigo-600 cursor-pointer"
-                >
-                  Reset timer
-                </button>
-                <span>·</span>
-              </>
-            )}
-            <button
-              onClick={() => setShowAllTopicsModal(true)}
-              className="underline hover:text-indigo-600 cursor-pointer"
-            >
-              Show all topics
-            </button>
-            <span>·</span>
-            <button
-              onClick={() => setShowResetModal(true)}
-              className="underline hover:text-red-600 cursor-pointer"
-            >
-              Reset all
-            </button>
-          </div>
-
-          <div>
-            <span>30 Topics • 240 Questions</span>
-          </div>
+          <button
+            id="btn-mode-single"
+            class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors cursor-pointer bg-slate-100 text-slate-700 hover:bg-slate-200"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+            <span>ONE QUESTION AT A TIME</span>
+          </button>
         </div>
-      </footer>
+      </div>
 
-      {/* ==========================================
-          MODAL A: SHOW ALL 30 TOPICS
-      ========================================== */}
-      {showAllTopicsModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[88vh] flex flex-col shadow-xl border border-slate-200 overflow-hidden">
-            {/* Modal Header */}
-            <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-extrabold text-slate-900">
-                  ALL 30 SPEAKING TOPICS
-                </h2>
-                <p className="text-xs sm:text-sm text-slate-500">
-                  Click any topic to select it manually. Completed topics are marked.
-                </p>
-              </div>
-              <button
-                onClick={() => setShowAllTopicsModal(false)}
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
+      <!-- Mode 1: All 8 Questions List -->
+      <ol id="questions-all-list" class="space-y-4">
+        <!-- Populated by JavaScript -->
+      </ol>
 
-            {/* Modal Body: Organized by 5 Categories */}
-            <div className="p-6 overflow-y-auto space-y-8">
-              {CATEGORIES.slice(1).map((catName) => {
-                const catTopics = TOPICS_DATA.filter((t) => t.category === catName);
-                return (
-                  <div key={catName}>
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-indigo-600 mb-3">
-                      {catName}
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-                      {catTopics.map((topic) => {
-                        const isUsed = usedTopicIds.includes(topic.id);
-                        const isCurrent = currentTopic?.id === topic.id;
-                        return (
-                          <button
-                            key={topic.id}
-                            onClick={() => handleManualSelectTopic(topic)}
-                            className={`flex items-center justify-between p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
-                              isCurrent
-                                ? 'bg-indigo-600 text-white border-indigo-600 font-bold'
-                                : isUsed
-                                ? 'bg-slate-50 text-slate-400 border-slate-200 hover:border-slate-300'
-                                : 'bg-white text-slate-800 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/30 font-semibold'
-                            }`}
-                          >
-                            <div className="flex items-center gap-2.5 truncate">
-                              <span
-                                className={`text-xs px-2 py-0.5 rounded-md font-bold ${
-                                  isCurrent
-                                    ? 'bg-indigo-700 text-white'
-                                    : 'bg-slate-100 text-slate-500'
-                                }`}
-                              >
-                                #{topic.id}
-                              </span>
-                              <span className="truncate text-sm">{topic.title}</span>
-                            </div>
-                            {isUsed && (
-                              <CheckCircle2
-                                className={`w-4 h-4 shrink-0 ${
-                                  isCurrent ? 'text-white' : 'text-emerald-500'
-                                }`}
-                              />
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+      <!-- Mode 2: One Question at a Time View -->
+      <div id="questions-single-view" class="hidden py-4">
+        <div class="flex items-center justify-between mb-4">
+          <span id="single-question-progress" class="text-xs sm:text-sm font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3.5 py-1.5 rounded-full">
+            QUESTION 1 OF 8
+          </span>
 
-            {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
-              <span className="text-xs sm:text-sm text-slate-600 font-medium">
-                {completedTopicsCount} of 30 topics used in this session
-              </span>
-              <button
-                onClick={() => setShowAllTopicsModal(false)}
-                className="px-5 py-2 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800"
-              >
-                Close
-              </button>
-            </div>
-          </div>
+          <span id="single-question-visited" class="text-xs text-slate-500 font-medium">
+            1 of 8 questions visited
+          </span>
         </div>
-      )}
 
-      {/* ==========================================
-          MODAL B: RESET ALL CONFIRMATION
-      ========================================== */}
-      {showResetModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-xl border border-slate-200 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-4">
-              <AlertCircle className="w-6 h-6" />
-            </div>
-            <h3 className="text-xl font-extrabold text-slate-900 mb-2">
-              Restart Activity?
-            </h3>
-            <p className="text-slate-600 text-sm sm:text-base mb-6 leading-relaxed">
-              "Are you sure you want to restart the activity? All previously selected topics will become available again."
-            </p>
-            <div className="flex items-center justify-center gap-3">
-              <button
-                onClick={() => setShowResetModal(false)}
-                className="flex-1 py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmResetAll}
-                className="flex-1 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-colors cursor-pointer"
-              >
-                Confirm Reset
-              </button>
-            </div>
-          </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-8 sm:p-12 my-4 text-center min-h-[180px] flex items-center justify-center">
+          <p id="single-question-text" class="text-2xl sm:text-4xl font-bold text-slate-900 leading-snug max-w-3xl">
+            Why did you choose this particular book?
+          </p>
         </div>
-      )}
+
+        <div class="flex flex-wrap items-center justify-between gap-4 mt-6">
+          <button
+            id="btn-question-prev"
+            class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-sm sm:text-base transition-colors cursor-pointer"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            <span>PREVIOUS</span>
+          </button>
+
+          <div id="question-dots-container" class="flex items-center gap-1.5">
+            <!-- Populated by JavaScript -->
+          </div>
+
+          <button
+            id="btn-question-next"
+            class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm sm:text-base transition-colors cursor-pointer"
+          >
+            <span>NEXT</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bottom Teacher Question Controls -->
+      <div class="mt-8 pt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4 text-xs sm:text-sm text-slate-500">
+        <span>Tip: The teacher may ask additional spontaneous follow-up questions.</span>
+        <div class="flex items-center gap-3">
+          <button
+            id="btn-footer-random-question"
+            class="inline-flex items-center gap-1.5 font-semibold text-indigo-600 hover:text-indigo-800 cursor-pointer"
+          >
+            <span>Draw Random Question</span>
+          </button>
+          <span>•</span>
+          <button
+            id="btn-footer-hide-questions"
+            class="inline-flex items-center gap-1.5 font-semibold text-slate-600 hover:text-slate-900 cursor-pointer"
+          >
+            <span>Hide Questions</span>
+          </button>
+        </div>
+      </div>
     </div>
-  );
-}
+  </main>
+
+  <!-- ==========================================
+       PERSISTENT TEACHER FOOTER BAR
+  ========================================== -->
+  <footer class="w-full bg-white border-t border-slate-200 px-4 sm:px-8 py-4 mt-auto">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4 text-xs sm:text-sm text-slate-500">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="font-semibold text-slate-700">Teacher Controls:</span>
+        <button id="footer-draw-topic" class="underline hover:text-indigo-600 disabled:opacity-40 cursor-pointer">
+          Draw topic
+        </button>
+        <span>·</span>
+        <span id="footer-active-topic-links" class="hidden items-center gap-2">
+          <button id="footer-toggle-questions" class="underline hover:text-indigo-600 cursor-pointer">
+            Reveal questions
+          </button>
+          <span>·</span>
+          <button id="footer-reset-timer" class="underline hover:text-indigo-600 cursor-pointer">
+            Reset timer
+          </button>
+          <span>·</span>
+        </span>
+        <button id="footer-show-all" class="underline hover:text-indigo-600 cursor-pointer">
+          Show all topics
+        </button>
+        <span>·</span>
+        <button id="footer-reset-all" class="underline hover:text-red-600 cursor-pointer">
+          Reset all
+        </button>
+      </div>
+
+      <div>
+        <span>30 Topics • 240 Questions</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==========================================
+       MODAL A: SHOW ALL 30 TOPICS
+  ========================================== -->
+  <div id="modal-all-topics" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-4xl w-full max-h-[88vh] flex flex-col shadow-xl border border-slate-200 overflow-hidden">
+      <div class="px-6 py-5 border-b border-slate-200 flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-extrabold text-slate-900">
+            ALL 30 SPEAKING TOPICS
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-500">
+            Click any topic to select it manually. Completed topics are marked.
+          </p>
+        </div>
+        <button
+          id="btn-close-topics-modal"
+          class="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div id="all-topics-grid-container" class="p-6 overflow-y-auto space-y-8">
+        <!-- Populated by JavaScript -->
+      </div>
+
+      <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+        <span id="modal-topics-count-footer" class="text-xs sm:text-sm text-slate-600 font-medium">
+          0 of 30 topics used in this session
+        </span>
+        <button
+          id="btn-close-topics-modal-bottom"
+          class="px-5 py-2 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 cursor-pointer"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL B: RESET ALL CONFIRMATION
+  ========================================== -->
+  <div id="modal-reset-confirm" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-xl border border-slate-200 text-center">
+      <div class="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <h3 class="text-xl font-extrabold text-slate-900 mb-2">
+        Restart Activity?
+      </h3>
+      <p class="text-slate-600 text-sm sm:text-base mb-6 leading-relaxed">
+        "Are you sure you want to restart the activity? All previously selected topics will become available again."
+      </p>
+      <div class="flex items-center justify-center gap-3">
+        <button
+          id="btn-cancel-reset"
+          class="flex-1 py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm transition-colors cursor-pointer"
+        >
+          Cancel
+        </button>
+        <button
+          id="btn-confirm-reset"
+          class="flex-1 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-colors cursor-pointer"
+        >
+          Confirm Reset
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       APPLICATION LOGIC & COMPLETE 30-TOPIC DATABASE
+  ========================================== -->
+  <script>
+    const CATEGORIES = [
+      'All Categories',
+      'Culture & Entertainment',
+      'Food & Places',
+      'People & Society',
+      'Personal Life & Experiences',
+      'Technology & Ideas'
+    ];
+
+    const TOPICS_DATA = [
+      // CATEGORY 1 – CULTURE & ENTERTAINMENT
+      {
+        id: 1,
+        category: 'Culture & Entertainment',
+        title: 'ONE BOOK',
+        questions: [
+          'Why did you choose this particular book?',
+          'Who is your favourite character? Why?',
+          'Did you like the way the story ended? Why or why not?',
+          'Would you recommend this book to a younger or older person?',
+          'If you could change one thing about the story, what would it be?',
+          'Do you think books are still important in the digital age?',
+          'Is there a particular message or lesson that readers can take from this book?',
+          "Do you think the book's title and cover represent its story well?"
+        ]
+      },
+      {
+        id: 2,
+        category: 'Culture & Entertainment',
+        title: 'ONE MOVIE',
+        questions: [
+          'Why did you choose this particular movie?',
+          'Who is your favourite character? Why?',
+          'What was the most memorable scene? Why?',
+          'Did you like the ending? Would you change anything?',
+          'Do you think the actors were well chosen for their roles?',
+          'What message or idea does the movie communicate?',
+          'Would you recommend this movie to someone with different interests?',
+          'Do you think the movie is better than other films in the same genre?'
+        ]
+      },
+      {
+        id: 3,
+        category: 'Culture & Entertainment',
+        title: 'ONE SONG',
+        questions: [
+          'Why did you choose this particular song?',
+          'What is the song about?',
+          'Is there a particular lyric or part that you find meaningful?',
+          'What emotions does the song communicate?',
+          'Do you think the melody and lyrics work well together?',
+          'Would you listen to this song in a different situation or mood?',
+          "Do you think music can influence people's opinions or behaviour?",
+          "Would you recommend this song to someone who doesn't usually listen to this genre?"
+        ]
+      },
+      {
+        id: 4,
+        category: 'Culture & Entertainment',
+        title: 'ONE ALBUM',
+        questions: [
+          'Why did you choose this album?',
+          'Which track is your favourite? Why?',
+          'Is there a song on the album that you think is underrated?',
+          'Do all the tracks follow a similar musical style?',
+          'What do you think the artist wanted to communicate through this album?',
+          'How was the album received by critics and fans?',
+          "Do you think the album represents an important moment in the artist's career?",
+          'If you could remove or add one track, what would it be?'
+        ]
+      },
+      {
+        id: 5,
+        category: 'Culture & Entertainment',
+        title: 'ONE TV SERIES',
+        questions: [
+          'Why did you choose this particular series?',
+          'Who is your favourite character? Why?',
+          'Which episode do you find the most interesting or memorable?',
+          'What makes the storyline engaging?',
+          'Do you think the series maintains its quality throughout the seasons?',
+          'Would you change anything about the plot or characters?',
+          'Why do you think this series became popular?',
+          "Would you recommend it to someone who doesn't usually watch this genre?"
+        ]
+      },
+      {
+        id: 6,
+        category: 'Culture & Entertainment',
+        title: 'ONE VIDEO GAME',
+        questions: [
+          'Why did you choose this particular game?',
+          'Can you describe its storyline or main objective?',
+          'Who is your favourite character? Why?',
+          'What makes the gameplay interesting or challenging?',
+          'What is the most memorable moment you experienced while playing?',
+          'Do you think video games can tell stories as effectively as movies or books?',
+          'What would you improve about the game?',
+          'Do you think video games have a positive or negative influence on people?'
+        ]
+      },
+      {
+        id: 7,
+        category: 'Culture & Entertainment',
+        title: 'ONE DOCUMENTARY',
+        questions: [
+          'Why did you choose this documentary?',
+          'What is its main subject or message?',
+          'What was the most surprising fact you discovered?',
+          'Did the documentary change your opinion about anything?',
+          'Do you think the information was presented objectively?',
+          'Were the interviews, images, or examples effective?',
+          'Would you recommend it to someone who knows very little about the subject?',
+          'Do you think documentaries are a reliable source of information?'
+        ]
+      },
+      {
+        id: 8,
+        category: 'Culture & Entertainment',
+        title: 'ONE PODCAST EPISODE',
+        questions: [
+          'Why did you choose this particular episode?',
+          'What was the main topic discussed?',
+          'Who were the speakers or guests?',
+          'What was the most interesting point raised during the discussion?',
+          'Was there anything you disagreed with? Why?',
+          'Did you learn anything new?',
+          'Would you listen to more episodes of this podcast?',
+          'Do you think podcasts are a good way to learn about different subjects?'
+        ]
+      },
+      {
+        id: 9,
+        category: 'Culture & Entertainment',
+        title: 'ONE GAME',
+        questions: [
+          'Why did you choose this particular game?',
+          'Can you explain how people play it?',
+          'What skills or strategies does it require?',
+          'What makes it enjoyable or challenging?',
+          'Is it better to play alone or with other people?',
+          'Would you recommend it to someone who has never played it?',
+          'Do you think traditional games are becoming less popular?',
+          'If you could change one rule, what would it be?'
+        ]
+      },
+
+      // CATEGORY 2 – FOOD & PLACES
+      {
+        id: 10,
+        category: 'Food & Places',
+        title: 'ONE DISH',
+        questions: [
+          'Why did you choose this particular dish?',
+          'What are its main ingredients?',
+          'How is it prepared?',
+          'Where does this dish originally come from?',
+          'What makes its flavour or preparation special?',
+          'Do you consider it a healthy meal? Why or why not?',
+          'Would you recommend it to someone who has never tried it?',
+          'If you could change one ingredient, what would you change?'
+        ]
+      },
+      {
+        id: 11,
+        category: 'Food & Places',
+        title: 'ONE RESTAURANT',
+        questions: [
+          'Why did you choose this particular restaurant?',
+          'What kind of food does it serve?',
+          'How would you describe its atmosphere and decoration?',
+          'What is the best dish on the menu?',
+          'How would you describe the quality of the service?',
+          'Do you think the prices are reasonable?',
+          'What makes this restaurant different from other places?',
+          'Would you visit it again? Why or why not?'
+        ]
+      },
+      {
+        id: 12,
+        category: 'Food & Places',
+        title: 'ONE CAFÉ',
+        questions: [
+          'Why did you choose this particular café?',
+          'How would you describe its atmosphere?',
+          'What are its most popular drinks or food options?',
+          'Is it a good place to study, work, or meet friends?',
+          'Do you think its prices are reasonable?',
+          'What makes it different from other cafés?',
+          'Would you recommend it to tourists or visitors?',
+          'If you could improve something about it, what would it be?'
+        ]
+      },
+      {
+        id: 13,
+        category: 'Food & Places',
+        title: 'ONE PLACE',
+        questions: [
+          'Why did you choose this particular place?',
+          'What makes this place special or interesting?',
+          'What are the main attractions or things people can do there?',
+          'How would you describe the local culture and lifestyle?',
+          'What is the best time of the year to visit?',
+          'Do you think tourism has a positive or negative impact on this place?',
+          'Would you consider living there? Why or why not?',
+          'If you could visit only one attraction there, which would you choose?'
+        ]
+      },
+      {
+        id: 14,
+        category: 'Food & Places',
+        title: 'ONE HOTEL',
+        questions: [
+          'Why did you choose this particular hotel?',
+          'Where is it located?',
+          'What facilities and services does it offer?',
+          'How would you describe its rooms and overall atmosphere?',
+          'Do you think it offers good value for money?',
+          'What type of traveller would enjoy staying there?',
+          'Would you choose this hotel for your next holiday?',
+          'What would you improve about its services?'
+        ]
+      },
+      {
+        id: 15,
+        category: 'Food & Places',
+        title: 'ONE ATTRACTION',
+        questions: [
+          'Why did you choose this particular attraction?',
+          'What can visitors see and do there?',
+          'Is there any interesting history behind it?',
+          'What makes it different from other attractions?',
+          'Is it suitable for people of all ages?',
+          'Do you think the entrance fee is reasonable?',
+          'What would be the best time to visit?',
+          'Would you recommend it to someone visiting the area?'
+        ]
+      },
+      {
+        id: 16,
+        category: 'Food & Places',
+        title: 'ONE TRIP',
+        questions: [
+          'Where did you go, and why did you choose that destination?',
+          'Who did you travel with?',
+          'What was the most memorable experience?',
+          'Did anything unexpected happen during the trip?',
+          'What did you enjoy the most and the least?',
+          'Did you learn anything about the local culture?',
+          'Would you visit this destination again?',
+          'If you could do the trip again, would you change anything?'
+        ]
+      },
+
+      // CATEGORY 3 – PEOPLE & SOCIETY
+      {
+        id: 17,
+        category: 'People & Society',
+        title: 'ONE PERSON',
+        questions: [
+          'Why did you choose this person?',
+          'What are their most important achievements?',
+          'What challenges did they face during their life or career?',
+          'What personal qualities do you admire about them?',
+          'Do you think they are a good role model? Why or why not?',
+          'How have they influenced other people or society?',
+          'Would you like to meet this person? What would you ask them?',
+          'Do you think their legacy will remain important in the future?'
+        ]
+      },
+      {
+        id: 18,
+        category: 'People & Society',
+        title: 'ONE CELEBRITY',
+        questions: [
+          'Why did you choose this particular celebrity?',
+          'How did they become famous?',
+          'What are their most important achievements?',
+          'How would you describe their public image?',
+          'Do you think celebrities have too much influence on society?',
+          'Do you think their private lives should receive so much media attention?',
+          'Would you like to meet this celebrity? Why?',
+          'Do you think they will remain famous in the future?'
+        ]
+      },
+      {
+        id: 19,
+        category: 'People & Society',
+        title: 'ONE NEWS STORY',
+        questions: [
+          'What was the most interesting aspect of this news story?',
+          'Did you learn anything new from reading it?',
+          'Why do you think this story is important?',
+          'How might this event affect the people involved?',
+          'Do you think the media presented the story objectively?',
+          'Would you like to read more about this topic? Why?',
+          'Do you think social media helps people stay informed or spreads misinformation?',
+          'What do you think might happen next?'
+        ]
+      },
+      {
+        id: 20,
+        category: 'People & Society',
+        title: 'ONE HISTORICAL EVENT',
+        questions: [
+          'Why did you choose this historical event?',
+          'What happened, and when did it take place?',
+          'Who were the most important people involved?',
+          'What were the main causes of this event?',
+          'What were its most significant consequences?',
+          'How did it change society or the world?',
+          'Do you think something similar could happen today?',
+          'What can people learn from this historical event?'
+        ]
+      },
+      {
+        id: 21,
+        category: 'People & Society',
+        title: 'ONE PHOTOGRAPH',
+        questions: [
+          'Why did you choose this particular photograph?',
+          'Can you describe what we can see in the picture?',
+          'Where and when was it taken?',
+          'What do you think was happening when the photograph was taken?',
+          'What emotions or ideas does the image communicate?',
+          'Do you think the photograph tells a complete story?',
+          'How might different people interpret this image differently?',
+          "Do you think photographs can influence people's opinions about important events?"
+        ]
+      },
+      {
+        id: 22,
+        category: 'People & Society',
+        title: 'ONE SOCIAL ISSUE',
+        questions: [
+          'Why did you choose this particular social issue?',
+          'What are the main causes of this problem?',
+          'Who is most affected by it?',
+          'What consequences does it have for society?',
+          'Do you think governments are doing enough to address this issue?',
+          'What could individuals do to help?',
+          'Do you think this problem will become more serious in the future?',
+          'What would be the most effective solution?'
+        ]
+      },
+
+      // CATEGORY 4 – PERSONAL LIFE & EXPERIENCES
+      {
+        id: 23,
+        category: 'Personal Life & Experiences',
+        title: 'ONE HOBBY',
+        questions: [
+          'Why did you choose this particular hobby?',
+          'How did you become interested in it?',
+          'How much time do you usually spend doing it?',
+          'What skills does this hobby require?',
+          'What do you enjoy the most about it?',
+          'Is it an expensive hobby?',
+          'Would you recommend it to someone who wants to try something new?',
+          'Do you think you will continue this hobby in the future?'
+        ]
+      },
+      {
+        id: 24,
+        category: 'Personal Life & Experiences',
+        title: 'ONE PET',
+        questions: [
+          'Why did you choose this particular animal?',
+          'Can you describe its appearance and personality?',
+          'What are its most interesting habits?',
+          'What kind of care does it require?',
+          'What makes this animal a good or difficult pet?',
+          "How can having a pet influence someone's life?",
+          'Would you recommend this animal to other people?',
+          'If you could have any animal as a pet, would you choose the same one?'
+        ]
+      },
+      {
+        id: 25,
+        category: 'Personal Life & Experiences',
+        title: 'ONE POSSESSION',
+        questions: [
+          'What object did you choose, and why?',
+          'When and how did you get it?',
+          'How often do you use it?',
+          'Does it have any sentimental or practical value?',
+          'What would you do if you lost it?',
+          'Do you think people are too attached to material possessions?',
+          'Would you recommend this product to other people?',
+          'If you could replace it with something better, would you?'
+        ]
+      },
+      {
+        id: 26,
+        category: 'Personal Life & Experiences',
+        title: 'ONE EVENT',
+        questions: [
+          'What event did you choose, and when did it happen?',
+          'Why did you decide to attend it?',
+          'Who did you go with?',
+          'What was the most memorable moment?',
+          'Did anything unexpected happen?',
+          'How would you describe the atmosphere?',
+          'Would you attend this event again?',
+          'What would make the experience even better?'
+        ]
+      },
+      {
+        id: 27,
+        category: 'Personal Life & Experiences',
+        title: 'ONE CHILDHOOD MEMORY',
+        questions: [
+          'Why did you choose this particular memory?',
+          'How old were you when it happened?',
+          'Who was involved?',
+          'Can you describe what happened?',
+          'How did you feel at the time?',
+          'Do you remember any particular details about that day?',
+          'Does this memory mean something different to you now?',
+          "Do you think childhood experiences shape people's personalities?"
+        ]
+      },
+      {
+        id: 28,
+        category: 'Personal Life & Experiences',
+        title: 'ONE DREAM',
+        questions: [
+          'What is your dream or biggest ambition?',
+          'When did you first develop this dream?',
+          'Why is it important to you?',
+          'What challenges might prevent you from achieving it?',
+          'What steps would you need to take to make it happen?',
+          'Who could help or inspire you along the way?',
+          'How would your life change if you achieved this dream?',
+          'Do you think it is important to have dreams, even if they seem unrealistic?'
+        ]
+      },
+
+      // CATEGORY 5 – TECHNOLOGY & IDEAS
+      {
+        id: 29,
+        category: 'Technology & Ideas',
+        title: 'ONE APP OR WEBSITE',
+        questions: [
+          'Why did you choose this particular app or website?',
+          'What is its main purpose?',
+          'What are its most useful features?',
+          'How often do you use it?',
+          'What are its main advantages and disadvantages?',
+          "Do you think it has changed people's habits or routines?",
+          'Would you recommend it to someone who has never used it?',
+          'If you could add one new feature, what would it be?'
+        ]
+      },
+      {
+        id: 30,
+        category: 'Technology & Ideas',
+        title: 'ONE INVENTION',
+        questions: [
+          'Why did you choose this particular invention?',
+          'Who invented it, and when?',
+          'What problem was it originally designed to solve?',
+          "How has it changed people's lives?",
+          'Can you imagine living without it?',
+          'Do you think it has any negative consequences?',
+          'What would the world be like if this invention had never existed?',
+          'What invention do you think will be important in the future?'
+        ]
+      }
+    ];
+
+    // ==========================================
+    // APPLICATION STATE
+    // ==========================================
+    const INITIAL_TIME = 180; // 3 minutes in seconds
+
+    let selectedCategory = 'All Categories';
+    let usedTopicIds = [];
+    let currentTopic = null;
+
+    // Timer state
+    let timeLeft = INITIAL_TIME;
+    let timerStatus = 'IDLE'; // 'IDLE' | 'RUNNING' | 'PAUSED' | 'FINISHED'
+    let endTime = null;
+    let timerInterval = null;
+
+    // Questions state
+    let questionsRevealed = false;
+    let questionDisplayMode = 'ALL'; // 'ALL' | 'SINGLE'
+    let currentQuestionIndex = 0;
+    let usedQuestionIndices = [];
+
+    // ==========================================
+    // HELPER FUNCTIONS
+    // ==========================================
+    function getAvailableTopicsInFilter() {
+      return TOPICS_DATA.filter((topic) => {
+        const matchesCat =
+          selectedCategory === 'All Categories' || topic.category === selectedCategory;
+        const notUsed = !usedTopicIds.includes(topic.id);
+        return matchesCat && notUsed;
+      });
+    }
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    // ==========================================
+    // TIMER FUNCTIONS (DRIFT-COMPENSATED)
+    // ==========================================
+    function stopTimerLoop() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function startTimer() {
+      stopTimerLoop();
+      endTime = Date.now() + timeLeft * 1000;
+      timerStatus = 'RUNNING';
+      timerInterval = setInterval(() => {
+        if (!endTime) return;
+        const remainingMs = endTime - Date.now();
+        const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
+        timeLeft = remainingSec;
+
+        if (remainingSec <= 0) {
+          timerStatus = 'FINISHED';
+          endTime = null;
+          stopTimerLoop();
+        }
+        renderTimerUI();
+      }, 200);
+      renderTimerUI();
+    }
+
+    function pauseTimer() {
+      if (endTime) {
+        timeLeft = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+      }
+      endTime = null;
+      timerStatus = 'PAUSED';
+      stopTimerLoop();
+      renderTimerUI();
+    }
+
+    function resumeTimer() {
+      startTimer();
+    }
+
+    function restartTimer() {
+      stopTimerLoop();
+      endTime = null;
+      timeLeft = INITIAL_TIME;
+      timerStatus = 'IDLE';
+      renderTimerUI();
+    }
+
+    // ==========================================
+    // TOPIC ACTIONS
+    // ==========================================
+    function selectTopic(topic) {
+      const cardEl = document.getElementById('topic-card');
+      cardEl.classList.add('card-animating');
+
+      setTimeout(() => {
+        currentTopic = topic;
+        if (!usedTopicIds.includes(topic.id)) {
+          usedTopicIds.push(topic.id);
+        }
+
+        // Reset timer & questions
+        stopTimerLoop();
+        endTime = null;
+        timeLeft = INITIAL_TIME;
+        timerStatus = 'IDLE';
+        questionsRevealed = false;
+        questionDisplayMode = 'ALL';
+        currentQuestionIndex = 0;
+        usedQuestionIndices = [];
+
+        renderAll();
+        cardEl.classList.remove('card-animating');
+      }, 180);
+    }
+
+    function drawRandomTopic() {
+      const available = getAvailableTopicsInFilter();
+      if (available.length === 0) return;
+      const randomIndex = Math.floor(Math.random() * available.length);
+      selectTopic(available[randomIndex]);
+    }
+
+    // ==========================================
+    // QUESTION ACTIONS
+    // ==========================================
+    function revealQuestions() {
+      if (!currentTopic) return;
+      questionsRevealed = true;
+      if (usedQuestionIndices.length === 0) {
+        usedQuestionIndices = [0];
+      }
+      renderAll();
+      setTimeout(() => {
+        document
+          .getElementById('interview-questions-section')
+          .scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+
+    function hideQuestions() {
+      questionsRevealed = false;
+      renderAll();
+    }
+
+    function pickRandomQuestion() {
+      if (!currentTopic) return;
+      const totalQ = currentTopic.questions.length;
+
+      if (!questionsRevealed) {
+        questionsRevealed = true;
+      }
+
+      if (usedQuestionIndices.length >= totalQ) {
+        usedQuestionIndices = [];
+      }
+
+      const availableIndices = [];
+      for (let i = 0; i < totalQ; i++) {
+        if (!usedQuestionIndices.includes(i)) {
+          availableIndices.push(i);
+        }
+      }
+
+      const randomIdx =
+        availableIndices[Math.floor(Math.random() * availableIndices.length)];
+
+      questionDisplayMode = 'SINGLE';
+      currentQuestionIndex = randomIdx;
+      usedQuestionIndices.push(randomIdx);
+
+      renderAll();
+      setTimeout(() => {
+        document
+          .getElementById('interview-questions-section')
+          .scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+
+    function prevQuestion() {
+      if (!currentTopic) return;
+      const total = currentTopic.questions.length;
+      currentQuestionIndex =
+        currentQuestionIndex > 0 ? currentQuestionIndex - 1 : total - 1;
+      if (!usedQuestionIndices.includes(currentQuestionIndex)) {
+        usedQuestionIndices.push(currentQuestionIndex);
+      }
+      renderQuestionsUI();
+    }
+
+    function nextQuestion() {
+      if (!currentTopic) return;
+      const total = currentTopic.questions.length;
+      currentQuestionIndex =
+        currentQuestionIndex < total - 1 ? currentQuestionIndex + 1 : 0;
+      if (!usedQuestionIndices.includes(currentQuestionIndex)) {
+        usedQuestionIndices.push(currentQuestionIndex);
+      }
+      renderQuestionsUI();
+    }
+
+    function resetAllActivity() {
+      stopTimerLoop();
+      endTime = null;
+      usedTopicIds = [];
+      currentTopic = null;
+      timeLeft = INITIAL_TIME;
+      timerStatus = 'IDLE';
+      questionsRevealed = false;
+      questionDisplayMode = 'ALL';
+      currentQuestionIndex = 0;
+      usedQuestionIndices = [];
+      selectedCategory = 'All Categories';
+      closeResetModal();
+      renderAll();
+    }
+
+    // ==========================================
+    // UI RENDERING FUNCTIONS
+    // ==========================================
+    function renderHeaderAndProgress() {
+      const total = TOPICS_DATA.length;
+      const used = usedTopicIds.length;
+      const remaining = total - used;
+
+      document.getElementById('progress-badge-text').innerHTML =
+        `TOPIC <strong class="text-slate-900">${used}</strong> OF <strong class="text-slate-900">${total}</strong>`;
+      document.getElementById('remaining-badge-text').textContent = `${remaining} remaining`;
+
+      const banner = document.getElementById('round-complete-banner');
+      if (remaining === 0) {
+        banner.classList.remove('hidden');
+        banner.classList.add('flex');
+      } else {
+        banner.classList.add('hidden');
+        banner.classList.remove('flex');
+      }
+    }
+
+    function renderCategoryFilters() {
+      const container = document.getElementById('category-filters-container');
+      container.innerHTML = '';
+
+      CATEGORIES.forEach((category) => {
+        const isSelected = selectedCategory === category;
+        const countInCat = TOPICS_DATA.filter(
+          (t) =>
+            (category === 'All Categories' || t.category === category) &&
+            !usedTopicIds.includes(t.id)
+        ).length;
+
+        const btn = document.createElement('button');
+        btn.className = `px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center gap-2 border cursor-pointer ${
+          isSelected
+            ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+            : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:text-slate-900'
+        }`;
+
+        btn.innerHTML = `
+          <span>${category}</span>
+          <span class="text-[11px] px-1.5 py-0.5 rounded-full font-semibold ${
+            isSelected ? 'bg-indigo-700 text-indigo-100' : 'bg-slate-100 text-slate-500'
+          }">${countInCat}</span>
+        `;
+
+        btn.addEventListener('click', () => {
+          selectedCategory = category;
+          renderAll();
+        });
+
+        container.appendChild(btn);
+      });
+    }
+
+    function renderTopicCard() {
+      const initialView = document.getElementById('topic-initial-view');
+      const selectedView = document.getElementById('topic-selected-view');
+      const available = getAvailableTopicsInFilter();
+
+      if (!currentTopic) {
+        initialView.classList.remove('hidden');
+        selectedView.classList.add('hidden');
+
+        const drawWrapper = document.getElementById('initial-draw-wrapper');
+        const emptyMsg = document.getElementById('initial-category-empty-msg');
+
+        if (available.length > 0) {
+          drawWrapper.classList.remove('hidden');
+          emptyMsg.classList.add('hidden');
+        } else {
+          drawWrapper.classList.add('hidden');
+          emptyMsg.classList.remove('hidden');
+          document.getElementById('empty-category-text').textContent =
+            `No remaining topics in "${selectedCategory}". Select another category or reset.`;
+        }
+      } else {
+        initialView.classList.add('hidden');
+        selectedView.classList.remove('hidden');
+
+        document.getElementById('selected-topic-category').textContent =
+          `CATEGORY: ${currentTopic.category.toUpperCase()}`;
+        document.getElementById('selected-topic-title').textContent = currentTopic.title;
+
+        const drawAnotherBtn = document.getElementById('btn-draw-another');
+        drawAnotherBtn.disabled = available.length === 0;
+      }
+
+      // Footer draw button state
+      document.getElementById('footer-draw-topic').disabled = available.length === 0;
+
+      // Footer active topic links
+      const activeLinks = document.getElementById('footer-active-topic-links');
+      if (currentTopic) {
+        activeLinks.classList.remove('hidden');
+        activeLinks.classList.add('inline-flex');
+        document.getElementById('footer-toggle-questions').textContent =
+          questionsRevealed ? 'Hide questions' : 'Reveal questions';
+      } else {
+        activeLinks.classList.add('hidden');
+        activeLinks.classList.remove('inline-flex');
+      }
+    }
+
+    function renderTimerUI() {
+      const section = document.getElementById('speaking-challenge-section');
+      if (!currentTopic) {
+        section.classList.add('hidden');
+        return;
+      }
+      section.classList.remove('hidden');
+
+      document.getElementById('timer-display').textContent = formatTime(timeLeft);
+
+      const timerBox = document.getElementById('timer-box');
+      const timesUpMsg = document.getElementById('times-up-message');
+
+      timerBox.className =
+        'inline-flex flex-col items-center justify-center px-10 py-6 sm:px-16 sm:py-8 rounded-2xl border-2 mb-8 transition-colors ';
+
+      if (timerStatus === 'FINISHED') {
+        timerBox.className += 'bg-amber-50 border-amber-300 text-amber-900';
+        timesUpMsg.classList.remove('hidden');
+      } else if (timerStatus === 'RUNNING') {
+        timerBox.className += 'bg-indigo-50/50 border-indigo-200 text-slate-900';
+        timesUpMsg.classList.add('hidden');
+      } else {
+        timerBox.className += 'bg-slate-50 border-slate-200 text-slate-900';
+        timesUpMsg.classList.add('hidden');
+      }
+
+      const btnStart = document.getElementById('btn-timer-start');
+      const btnPause = document.getElementById('btn-timer-pause');
+      const btnResume = document.getElementById('btn-timer-resume');
+
+      btnStart.classList.add('hidden');
+      btnStart.classList.remove('inline-flex');
+      btnPause.classList.add('hidden');
+      btnPause.classList.remove('inline-flex');
+      btnResume.classList.add('hidden');
+      btnResume.classList.remove('inline-flex');
+
+      if (timerStatus === 'IDLE') {
+        btnStart.classList.remove('hidden');
+        btnStart.classList.add('inline-flex');
+      } else if (timerStatus === 'RUNNING') {
+        btnPause.classList.remove('hidden');
+        btnPause.classList.add('inline-flex');
+      } else if (timerStatus === 'PAUSED') {
+        btnResume.classList.remove('hidden');
+        btnResume.classList.add('inline-flex');
+      }
+
+      // Reveal / Hide Questions button toggle
+      const btnReveal = document.getElementById('btn-reveal-questions');
+      const btnHide = document.getElementById('btn-hide-questions');
+      if (!questionsRevealed) {
+        btnReveal.classList.remove('hidden');
+        btnReveal.classList.add('inline-flex');
+        btnHide.classList.add('hidden');
+        btnHide.classList.remove('inline-flex');
+      } else {
+        btnReveal.classList.add('hidden');
+        btnReveal.classList.remove('inline-flex');
+        btnHide.classList.remove('hidden');
+        btnHide.classList.add('inline-flex');
+      }
+    }
+
+    function renderQuestionsUI() {
+      const section = document.getElementById('interview-questions-section');
+      if (!currentTopic || !questionsRevealed) {
+        section.classList.add('hidden');
+        return;
+      }
+      section.classList.remove('hidden');
+
+      const btnModeAll = document.getElementById('btn-mode-all');
+      const btnModeSingle = document.getElementById('btn-mode-single');
+      const allList = document.getElementById('questions-all-list');
+      const singleView = document.getElementById('questions-single-view');
+
+      if (questionDisplayMode === 'ALL') {
+        btnModeAll.className =
+          'inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors cursor-pointer bg-indigo-600 text-white';
+        btnModeSingle.className =
+          'inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors cursor-pointer bg-slate-100 text-slate-700 hover:bg-slate-200';
+
+        allList.classList.remove('hidden');
+        singleView.classList.add('hidden');
+
+        allList.innerHTML = '';
+        currentTopic.questions.forEach((qText, idx) => {
+          const li = document.createElement('li');
+          li.className =
+            'group flex items-start gap-4 p-4 sm:p-5 rounded-2xl bg-slate-50 hover:bg-indigo-50/60 border border-slate-200/80 hover:border-indigo-200 transition-colors cursor-pointer';
+          li.title = 'Click to focus on this question';
+          li.innerHTML = `
+            <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-slate-200 group-hover:border-indigo-300 group-hover:bg-indigo-600 group-hover:text-white text-slate-700 font-bold text-sm shrink-0 transition-colors">
+              ${idx + 1}
+            </span>
+            <span class="text-lg sm:text-xl font-medium text-slate-800 leading-relaxed">
+              ${qText}
+            </span>
+          `;
+          li.addEventListener('click', () => {
+            currentQuestionIndex = idx;
+            questionDisplayMode = 'SINGLE';
+            if (!usedQuestionIndices.includes(idx)) {
+              usedQuestionIndices.push(idx);
+            }
+            renderQuestionsUI();
+          });
+          allList.appendChild(li);
+        });
+      } else {
+        btnModeSingle.className =
+          'inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors cursor-pointer bg-indigo-600 text-white';
+        btnModeAll.className =
+          'inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors cursor-pointer bg-slate-100 text-slate-700 hover:bg-slate-200';
+
+        allList.classList.add('hidden');
+        singleView.classList.remove('hidden');
+
+        const total = currentTopic.questions.length;
+        document.getElementById('single-question-progress').textContent =
+          `QUESTION ${currentQuestionIndex + 1} OF ${total}`;
+        document.getElementById('single-question-visited').textContent =
+          `${usedQuestionIndices.length} of ${total} questions visited`;
+        document.getElementById('single-question-text').textContent =
+          currentTopic.questions[currentQuestionIndex];
+
+        const dotsContainer = document.getElementById('question-dots-container');
+        dotsContainer.innerHTML = '';
+        currentTopic.questions.forEach((_, idx) => {
+          const isCurrent = idx === currentQuestionIndex;
+          const isVisited = usedQuestionIndices.includes(idx);
+          const dotBtn = document.createElement('button');
+          dotBtn.className = `w-8 h-8 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            isCurrent
+              ? 'bg-indigo-600 text-white scale-110'
+              : isVisited
+              ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
+              : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+          }`;
+          dotBtn.textContent = idx + 1;
+          dotBtn.addEventListener('click', () => {
+            currentQuestionIndex = idx;
+            if (!usedQuestionIndices.includes(idx)) {
+              usedQuestionIndices.push(idx);
+            }
+            renderQuestionsUI();
+          });
+          dotsContainer.appendChild(dotBtn);
+        });
+      }
+    }
+
+    function renderAllTopicsModal() {
+      const container = document.getElementById('all-topics-grid-container');
+      container.innerHTML = '';
+
+      CATEGORIES.slice(1).forEach((catName) => {
+        const catTopics = TOPICS_DATA.filter((t) => t.category === catName);
+        const sectionDiv = document.createElement('div');
+
+        const heading = document.createElement('h3');
+        heading.className = 'text-xs font-bold uppercase tracking-widest text-indigo-600 mb-3';
+        heading.textContent = catName;
+        sectionDiv.appendChild(heading);
+
+        const gridDiv = document.createElement('div');
+        gridDiv.className = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5';
+
+        catTopics.forEach((topic) => {
+          const isUsed = usedTopicIds.includes(topic.id);
+          const isCurrent = currentTopic && currentTopic.id === topic.id;
+
+          const btn = document.createElement('button');
+          btn.className = `flex items-center justify-between p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+            isCurrent
+              ? 'bg-indigo-600 text-white border-indigo-600 font-bold'
+              : isUsed
+              ? 'bg-slate-50 text-slate-400 border-slate-200 hover:border-slate-300'
+              : 'bg-white text-slate-800 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/30 font-semibold'
+          }`;
+
+          btn.innerHTML = `
+            <div class="flex items-center gap-2.5 truncate">
+              <span class="text-xs px-2 py-0.5 rounded-md font-bold ${
+                isCurrent ? 'bg-indigo-700 text-white' : 'bg-slate-100 text-slate-500'
+              }">#${topic.id}</span>
+              <span class="truncate text-sm">${topic.title}</span>
+            </div>
+            ${
+              isUsed
+                ? `<svg class="w-4 h-4 shrink-0 ${
+                    isCurrent ? 'text-white' : 'text-emerald-500'
+                  }" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>`
+                : ''
+            }
+          `;
+
+          btn.addEventListener('click', () => {
+            closeTopicsModal();
+            selectTopic(topic);
+          });
+
+          gridDiv.appendChild(btn);
+        });
+
+        sectionDiv.appendChild(gridDiv);
+        container.appendChild(sectionDiv);
+      });
+
+      document.getElementById('modal-topics-count-footer').textContent =
+        `${usedTopicIds.length} of ${TOPICS_DATA.length} topics used in this session`;
+    }
+
+    function openTopicsModal() {
+      renderAllTopicsModal();
+      const modal = document.getElementById('modal-all-topics');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeTopicsModal() {
+      const modal = document.getElementById('modal-all-topics');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function openResetModal() {
+      const modal = document.getElementById('modal-reset-confirm');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeResetModal() {
+      const modal = document.getElementById('modal-reset-confirm');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen?.().catch(() => {});
+      } else {
+        document.exitFullscreen?.().catch(() => {});
+      }
+    }
+
+    function renderAll() {
+      renderHeaderAndProgress();
+      renderCategoryFilters();
+      renderTopicCard();
+      renderTimerUI();
+      renderQuestionsUI();
+    }
+
+    // ==========================================
+    // EVENT LISTENERS INITIALIZATION
+    // ==========================================
+    window.addEventListener('DOMContentLoaded', () => {
+      // Topic drawing & selection
+      document.getElementById('btn-draw-initial').addEventListener('click', drawRandomTopic);
+      document.getElementById('btn-draw-another').addEventListener('click', drawRandomTopic);
+      document.getElementById('footer-draw-topic').addEventListener('click', drawRandomTopic);
+      document.getElementById('btn-switch-all-categories').addEventListener('click', () => {
+        selectedCategory = 'All Categories';
+        renderAll();
+      });
+
+      // Show all topics modal
+      document.getElementById('btn-show-all-topics').addEventListener('click', openTopicsModal);
+      document.getElementById('btn-choose-manually').addEventListener('click', openTopicsModal);
+      document.getElementById('footer-show-all').addEventListener('click', openTopicsModal);
+      document.getElementById('btn-close-topics-modal').addEventListener('click', closeTopicsModal);
+      document.getElementById('btn-close-topics-modal-bottom').addEventListener('click', closeTopicsModal);
+
+      // Reset all modal
+      document.getElementById('btn-reset-all').addEventListener('click', openResetModal);
+      document.getElementById('btn-banner-reset').addEventListener('click', openResetModal);
+      document.getElementById('footer-reset-all').addEventListener('click', openResetModal);
+      document.getElementById('btn-cancel-reset').addEventListener('click', closeResetModal);
+      document.getElementById('btn-confirm-reset').addEventListener('click', resetAllActivity);
+
+      // Timer controls
+      document.getElementById('btn-timer-start').addEventListener('click', startTimer);
+      document.getElementById('btn-timer-pause').addEventListener('click', pauseTimer);
+      document.getElementById('btn-timer-resume').addEventListener('click', resumeTimer);
+      document.getElementById('btn-timer-restart').addEventListener('click', restartTimer);
+      document.getElementById('footer-reset-timer').addEventListener('click', restartTimer);
+
+      // Questions controls
+      document.getElementById('btn-reveal-questions').addEventListener('click', revealQuestions);
+      document.getElementById('btn-hide-questions').addEventListener('click', hideQuestions);
+      document.getElementById('btn-footer-hide-questions').addEventListener('click', hideQuestions);
+      document.getElementById('footer-toggle-questions').addEventListener('click', () => {
+        if (questionsRevealed) hideQuestions();
+        else revealQuestions();
+      });
+
+      document.getElementById('btn-random-question').addEventListener('click', pickRandomQuestion);
+      document.getElementById('btn-footer-random-question').addEventListener('click', pickRandomQuestion);
+
+      document.getElementById('btn-mode-all').addEventListener('click', () => {
+        questionDisplayMode = 'ALL';
+        renderQuestionsUI();
+      });
+      document.getElementById('btn-mode-single').addEventListener('click', () => {
+        questionDisplayMode = 'SINGLE';
+        if (!usedQuestionIndices.includes(currentQuestionIndex)) {
+          usedQuestionIndices.push(currentQuestionIndex);
+        }
+        renderQuestionsUI();
+      });
+
+      document.getElementById('btn-question-prev').addEventListener('click', prevQuestion);
+      document.getElementById('btn-question-next').addEventListener('click', nextQuestion);
+
+      // Fullscreen toggle
+      document.getElementById('btn-fullscreen').addEventListener('click', toggleFullscreen);
+      document.addEventListener('fullscreenchange', () => {
+        const isFs = !!document.fullscreenElement;
+        document.getElementById('icon-fullscreen-enter').classList.toggle('hidden', isFs);
+        document.getElementById('icon-fullscreen-exit').classList.toggle('hidden', !isFs);
+      });
+
+      // Initial render
+      renderAll();
+    });
+  </script>
+</body>
+</html>
